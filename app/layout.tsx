@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import "./globals.css";
+import { AuthContextProvider } from "./Authentication/Authentication"; 
  
 const inter = Inter({ subsets: ["latin"] });
  
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className={inter.className}>
+        <AuthContextProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -28,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
         </ThemeProvider>
+        </AuthContextProvider>
       </body>
     </html>
   );

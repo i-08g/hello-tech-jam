@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import "./globals.css";
 import { AuthContextProvider } from "./Authentication/Authentication"; 
+import { severActioninInitializeApp } from "./Authentication/action";
  
 const inter = Inter({ subsets: ["latin"] });
  
@@ -14,10 +15,11 @@ export const metadata: Metadata = {
 };
  
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const app = severActioninInitializeApp()
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthContextProvider>
+        <AuthContextProvider app={app}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

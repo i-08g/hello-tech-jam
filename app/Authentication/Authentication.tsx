@@ -9,20 +9,16 @@ import {
   User
 } from "firebase/auth"
 import { useEffect, useState, createContext, useContext, ReactNode } from "react"
+import { severActioninInitializeApp } from "./action"
 
 // Your web app's Firebase configuration
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-const firebaseConfig = {
-  apiKey: "AIzaSyA_Zj4Add2-lfgPdFNJEMVVf_sQ6Cb7KvI",
-  authDomain: "attack-on-lapin-18373.firebaseapp.com",
-  projectId: "attack-on-lapin-18373",
-  storageBucket: "attack-on-lapin-18373.appspot.com",
-  messagingSenderId: "479249872302",
-  appId: "1:479249872302:web:2863c47ece28ce092f043f"
-}
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+// const app = initializeApp(firebaseConfig)
+
+// console.log(app)
+// const auth = getAuth(app)
 const provider = new GoogleAuthProvider()
 
 // 型定義
@@ -35,9 +31,12 @@ interface AuthContextType {
 // AuthContextProvider (Provider)
 interface AuthContextProviderProps {
   children: ReactNode
+  app:any
 }
 
-export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children }) => {
+export const AuthContextProvider: React.FC<AuthContextProviderProps> = ({ children,app }) => {
+  console.log(app)
+  const auth = getAuth(app)
   // ログインユーザ
   const [loginUser, setLoginUser] = useState<User | null>(null)
 

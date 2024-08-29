@@ -169,9 +169,7 @@ export default function GourmetsPage({
                   (option) => option.value === selectedBudget
                 )?.label;
                 if (selectedLabel) setBudgetLabel(selectedLabel);
-              }}
-
-            >
+              }}>
               {budgetOptions.map((option) => (
                 <DropdownMenuRadioItem key={option.value} value={option.value}>
                   {option.label}

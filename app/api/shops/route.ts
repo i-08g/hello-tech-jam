@@ -38,10 +38,9 @@ export async function GET(request: Request) {
     const query = new URLSearchParams({
       key: key,
       format: "json",
-      count:"5",
+      count: "5",
       large_area: searchParams.get("large_area") || "Z098",
       budget: searchParams.get("budget") || "",
-      count: "5"
     });
 
     const keyword = searchParams.get("keyword");

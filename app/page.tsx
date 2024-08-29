@@ -1,113 +1,238 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useRouter } from "next/navigation";
+import { Shop } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
+import React, { useState, useEffect } from "react";
+import { Genre } from "../components/genre";
+
+interface ServiceArea {
+  code: string;
+  name: string;
+}
+
+async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: boolean): Promise<Shop[]> {
+  const query = new URLSearchParams();
+  if (keyword) query.set("keyword", keyword);
+  if (budget) query.set("budget", budget);
+  if (area) query.set("large_area", area);
+  if (privateRoom) query.set("private_room", "1"); // 個室ありをリクエストするために "1" を設定
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
+    );
+    if (!res.ok) {
+      console.error(`Failed to fetch shops: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    return await res.json();
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Fetch error:", errorMessage);
+    return [];
+  }
+}
+
+async function fetchAreas(): Promise<ServiceArea[]> {
+  try {
+    const res = await fetch("/api/areas");
+    if (!res.ok) {
+      throw new Error("Failed to fetch areas");
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching areas:", error);
+    return [];
+  }
+}
+
+async function fetchLunchShops(): Promise<Shop[]> {
+  const query = new URLSearchParams({
+    large_area: "Z098", // 沖縄県
+    budget: "B001",     // 1501~2000円
+  });
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
+    );
+    if (!res.ok) {
+      console.error(`Failed to fetch lunch shops: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    return await res.json();
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Fetch error:", errorMessage);
+    return [];
+  }
+}
+
+export default function GourmetsPage({
+  searchParams,
+}: {
+  searchParams: { keyword?: string };
+}) {
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [lunchShops, setLunchShops] = useState<Shop[]>([]);
+  const [areas, setAreas] = useState<ServiceArea[]>([]);
+  const [selectedArea, setSelectedArea] = useState<string>("Z098"); // 初期エリア設定（例：東京）
+  const [budget, setBudget] = useState<string>("");
+  const [budgetLabel, setBudgetLabel] = useState<string>("予算を選択");
+  const [privateRoom, setPrivateRoom] = useState<boolean>(false);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true); // 初期ロード状態のフラグ
+
+  const router = useRouter(); // useRouterフックを使用
+
+  useEffect(() => {
+    // 初回マウント時にエリアのデータと初期の店舗データを取得
+    const fetchServiceAreas = async () => {
+      const areasData = await fetchAreas();
+      setAreas(areasData);
+
+      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+      setShops(shopsData);
+      setInitialLoad(false); // 初期ロード完了
+    };
+
+    const fetchInitialShops = async () => {
+      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+      setShops(shopsData);
+      setInitialLoad(false); // 初期ロード完了
+    };
+
+    fetchServiceAreas();
+    fetchInitialShops();
+  }, []); // 依存配列は空で初回のみ実行
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+    setShops(shopsData); // 検索ボタンが押された後に結果を更新
+
+    const query = new URLSearchParams({
+      keyword: searchParams.keyword || "",
+      area: selectedArea,
+      budget: budget,
+      private_room: privateRoom ? "1" : "", // チェックがついている場合に "1" をセット
+    }).toString();
+
+    router.push(`/results?${query}`);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div className="flex flex-col items-center justify-start min-h-screen pt-36 px-8 md:px-12 lg:px-16">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <form className="search-bar" onSubmit={handleSearch}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">{selectedArea}</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
+            <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
+              setSelectedArea(selectedArea);
+            }} name="area">
+              <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
+              {/* 他のエリアオプションを追加 */}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">{budgetLabel}</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>予算を選択</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              onValueChange={(selectedBudget) => {
+                setBudget(selectedBudget);
+                const selectedLabel = budgetOptions.find(
+                  (option) => option.value === selectedBudget
+                )?.label;
+                if (selectedLabel) setBudgetLabel(selectedLabel);
+              }}
+              name="budget"
+            >
+              {budgetOptions.map((option) => (
+                <DropdownMenuRadioItem key={option.value} value={option.value}>
+                  {option.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <div className="checkbox-container">
+          <label>
+            <input
+              type="checkbox"
+              checked={privateRoom}
+              onChange={(e) => setPrivateRoom(e.target.checked)}
             />
-          </a>
+            個室あり
+          </label>
         </div>
+
+        <Button type="submit">検索</Button>
+      </form>
+
+      <div className="space-y-8 py-8">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">近くのお店</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">ランチに最適2000円以下</h2>
+          <Genre shops={lunchShops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
+          <Genre shops={shops} />
+        </section>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
+
+const budgetOptions = [
+  { value: "B009", label: "~500円" },
+  { value: "B010", label: "501~1000円" },
+  { value: "B011", label: "1001~1500円" },
+  { value: "B001", label: "1501~2000円" },
+  { value: "B002", label: "2001~3000円" },
+  { value: "B003", label: "3001~4000円" },
+  { value: "B008", label: "4001~5000円" },
+  { value: "B004", label: "5001~7000円" },
+  { value: "B005", label: "7001~10000円" },
+  { value: "B006", label: "10000~15000円" },
+  { value: "B012", label: "15001~20000円" },
+  { value: "B013", label: "20001~30000円" },
+  { value: "B014", label: "30001~" },
+  // 他の予算オプ
+]

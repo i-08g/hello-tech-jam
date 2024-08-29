@@ -216,32 +216,6 @@ export default function GourmetsPage({
           <Genre shops={shops} />
         </section>
       </div>
-
-      <div className="card-container">
-        {shops.length > 0 ? (
-          shops
-            .filter(shop => !privateRoom || shop.private_room === "1")  // 個室ありのみをフィルタリング
-            .map((shop) => (
-              <Card key={shop.id}>
-                <CardHeader className="space-y-4 p-6">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={shop.photo.pc.m} />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <CardTitle>{shop.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>{shop.address || "住所情報なし"}</p>
-                  <p>{shop.genre?.name || "ジャンル情報なし"}</p>
-                  <p>{shop.budget?.name || "予算情報なし"}</p>
-                  <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
-                </CardContent>
-              </Card>
-            ))
-        ) : (
-          <p>店舗が見つかりません</p>
-        )}
-      </div>
     </div>
   );
 }

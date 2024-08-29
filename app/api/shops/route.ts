@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       count:"5",
       large_area: searchParams.get("large_area") || "Z098",
       budget: searchParams.get("budget") || "",
-      count: "20"
+      count: "5"
     });
 
     const keyword = searchParams.get("keyword");

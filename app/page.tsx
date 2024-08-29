@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation"; // useRouterをインポート
+import { useRouter } from "next/navigation";
 import { Shop } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -26,7 +26,7 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
   if (area) query.set("large_area", area);
-  if (privateRoom) query.set("private_room", "1");
+  if (privateRoom) query.set("private_room", "1"); // 個室ありをリクエストするために "1" を設定
 
   try {
     const res = await fetch(
@@ -66,14 +66,15 @@ export default function GourmetsPage({
   const [shops, setShops] = useState<Shop[]>([]);
   const [areas, setAreas] = useState<ServiceArea[]>([]);
   const [selectedArea, setSelectedArea] = useState<string>("Z098"); // 初期エリア設定（例：東京）
-  // const [areaLabel, setAreaLabel] = useState<string>("エリアを選択");
   const [budget, setBudget] = useState<string>("");
   const [budgetLabel, setBudgetLabel] = useState<string>("予算を選択");
-  const router = useRouter(); // useRouterフックを使用
   const [privateRoom, setPrivateRoom] = useState<boolean>(false);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true); // 初期ロード状態のフラグ
+
+  const router = useRouter(); // useRouterフックを使用
 
   useEffect(() => {
-    // 初回マウント時にエリアのデータを取得
+    // 初回マウント時にエリアのデータと初期の店舗データを取得
     const fetchServiceAreas = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
@@ -82,20 +83,24 @@ export default function GourmetsPage({
     const fetchInitialShops = async () => {
       const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
       setShops(shopsData);
+      setInitialLoad(false); // 初期ロード完了
     };
 
     fetchServiceAreas();
     fetchInitialShops();
-  }, []);
+  }, []); // 依存配列は空で初回のみ実行
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+    setShops(shopsData); // 検索ボタンが押された後に結果を更新
 
     const query = new URLSearchParams({
       keyword: searchParams.keyword || "",
       area: selectedArea,
       budget: budget,
-      private_room: privateRoom ? "1" : "0",
+      private_room: privateRoom ? "1" : "", // チェックがついている場合に "1" をセット
     }).toString();
 
     // 結果ページにリダイレクト
@@ -117,11 +122,10 @@ export default function GourmetsPage({
           <DropdownMenuContent>
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
-              setSelectedArea(selectedArea)
+              setSelectedArea(selectedArea);
             }} name="area">
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
-              {/* <DropdownMenuRadioItem value="kagoshima">鹿児島</DropdownMenuRadioItem> */}
-              {/* 他のジャンルを追加 */}
+              {/* 他のエリアオプションを追加 */}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -164,37 +168,38 @@ export default function GourmetsPage({
           </label>
         </div>
 
-
         <Button type="submit">検索</Button>
       </form>
 
-      {/* お店の表示 */}
       <div className="card-container">
         {shops.length > 0 ? (
-          shops.map((shop) => (
-            <Card key={shop.id}>
-              <CardHeader className="space-y-4 p-6">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={shop.photo.pc.m} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <CardTitle>{shop.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{shop.address || "住所情報なし"}</p>
-                <p>{shop.genre?.name || "ジャンル情報なし"}</p>
-              </CardContent>
-            </Card>
-          ))
+          shops
+            .filter(shop => !privateRoom || shop.private_room === "1")  // 個室ありのみをフィルタリング
+            .map((shop) => (
+              <Card key={shop.id}>
+                <CardHeader className="space-y-4 p-6">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={shop.photo.pc.m} />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  <CardTitle>{shop.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>{shop.address || "住所情報なし"}</p>
+                  <p>{shop.genre?.name || "ジャンル情報なし"}</p>
+                  <p>{shop.budget?.name || "予算情報なし"}</p>
+                  <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
+                </CardContent>
+              </Card>
+            ))
         ) : (
           <p>店舗が見つかりません</p>
         )}
       </div>
+      )}
     </div>
   );
 }
-
-
 
 const budgetOptions = [
   { value: "B009", label: "~500円" },
@@ -210,5 +215,5 @@ const budgetOptions = [
   { value: "B012", label: "15001~20000円" },
   { value: "B013", label: "20001~30000円" },
   { value: "B014", label: "30001~" },
-  // 他の予算オプションを追加
-];
+  // 他の予算オプ
+]

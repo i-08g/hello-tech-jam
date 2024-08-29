@@ -6,11 +6,12 @@ import { Shop } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-async function fetchShops(keyword?: string, budget?: string, area?: string): Promise<Shop[]> {
+async function fetchShops(keyword?: string, budget?: string, area?: string, count?:string): Promise<Shop[]> {
     const query = new URLSearchParams();
     if (keyword) query.set("keyword", keyword);
     if (budget) query.set("budget", budget);
     if (area) query.set("large_area", area);
+    if (count) query.set("count",count);
 
     try {
         const res = await fetch(
@@ -36,6 +37,7 @@ export default function ResultsPage() {
         const keyword = searchParams.get("keyword") || "";
         const budget = searchParams.get("budget") || "";
         const area = searchParams.get("area") || "";
+        const count = searchParams.get("count")  || ""; 
 
         const fetchData = async () => {
             try {

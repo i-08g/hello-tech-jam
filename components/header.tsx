@@ -1,5 +1,6 @@
  
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LoginUser } from "./Authentication/page";
  
 export default function Header() {
   return (
@@ -7,8 +8,8 @@ export default function Header() {
       <nav className="container mx-auto px-4 py-2 flex justify-between items-center">
         <h1 className="text-xl font-bold">Search Gourmet</h1>
         <div className="flex items-center space-x-4">
-          
           <ThemeToggle /> 
+          <LoginUser />
         </div>
       </nav>
     </header>

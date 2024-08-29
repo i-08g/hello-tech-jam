@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import React, { useState, useEffect } from "react";
 import { log } from "console";
+import {Genre} from "../components/genre"
 
 interface ServiceArea {
   code: string;
@@ -182,28 +183,28 @@ export default function GourmetsPage({
 
         <Button type="submit">検索</Button>
       </form>
-
-      {/* お店の表示 */}
-      <div className="card-container">
-        {shops.length > 0 ? (
-          shops.map((shop) => (
-            <Card key={shop.id}>
-              <CardHeader className="space-y-4 p-6">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={shop.photo.pc.m} />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <CardTitle>{shop.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{shop.address || "住所情報なし"}</p>
-                <p>{shop.genre?.name || "ジャンル情報なし"}</p>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <p>店舗が見つかりません</p>
-        )}
+      <div className="space-y-8 py-8">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">近くのお店</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">ランチに最適2000円以下</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        <section className="space-y-4">
+          <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
+          <Genre shops={shops} />
+        </section>
+        
+        {/* ランキング上位のおすすめ店表示 */}
       </div>
     </div>
   );

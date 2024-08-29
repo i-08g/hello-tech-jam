@@ -149,7 +149,7 @@ export default function GourmetsPage({
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
-            }} name="area">
+            }}>
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
               {/* 他のエリアオプションを追加 */}
             </DropdownMenuRadioGroup>
@@ -170,7 +170,7 @@ export default function GourmetsPage({
                 )?.label;
                 if (selectedLabel) setBudgetLabel(selectedLabel);
               }}
-              name="budget"
+
             >
               {budgetOptions.map((option) => (
                 <DropdownMenuRadioItem key={option.value} value={option.value}>
@@ -200,17 +200,17 @@ export default function GourmetsPage({
           <h2 className="text-2xl font-bold">近くのお店</h2>
           <Genre shops={shops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ランチに最適2000円以下</h2>
           <Genre shops={lunchShops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
           <Genre shops={shops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
           <Genre shops={shops} />

@@ -63,6 +63,22 @@
   width: 70%;
 }
 
+.result-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  /* 各カード間の隙間 */
+  padding: 0 1rem;
+  /* 左右に1remの余白を追加 */
+}
+
+.card {
+  width: 100%;
+  /* カードをコンテナ内で100%の幅に */
+  box-sizing: border-box;
+  /* パディングとボーダーを含めてサイズを計算 */
+}
+
 
 @layer base {
   :root {

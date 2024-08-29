@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
- 
+
 class APIError extends Error {
   constructor(public status: number, message: string) {
     super(message);
     this.name = "APIError";
   }
 }
- 
+
 async function fetchHotpepperData(url: string): Promise<any> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -18,7 +18,7 @@ async function fetchHotpepperData(url: string): Promise<any> {
   }
   return data.results.shop;
 }
- 
+
 function handleError(error: unknown): NextResponse {
   console.error("Error:", error);
   if (error instanceof APIError) {
@@ -26,7 +26,7 @@ function handleError(error: unknown): NextResponse {
   }
   return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
 }
- 
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -34,16 +34,17 @@ export async function GET(request: Request) {
     if (!key) {
       throw new APIError(500, "API key is not set");
     }
- 
+
     const query = new URLSearchParams({
-      key,
+      key: key,
       format: "json",
       large_area: searchParams.get("large_area") || "Z098",
+      budget: searchParams.get("budget") || ""
     });
- 
+
     const keyword = searchParams.get("keyword");
     if (keyword) query.set("keyword", keyword);
- 
+
     const url = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?${query.toString()}`;
     const data = await fetchHotpepperData(url);
     return NextResponse.json(data);

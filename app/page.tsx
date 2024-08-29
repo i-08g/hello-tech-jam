@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation"; // useRouterをインポート
 import { Shop } from "@/types";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,17 +15,18 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import React, { useState, useEffect } from "react";
-import { log } from "console";
 
 interface ServiceArea {
   code: string;
   name: string;
 }
 
-async function fetchShops(keyword?: string, budget?: string): Promise<Shop[]> {
+async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: boolean): Promise<Shop[]> {
   const query = new URLSearchParams();
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
+  if (area) query.set("large_area", area);
+  if (privateRoom) query.set("private_room", "1");
 
   try {
     const res = await fetch(
@@ -57,15 +58,6 @@ async function fetchAreas(): Promise<ServiceArea[]> {
   }
 }
 
-const budgetOptions = [
-  { value: "B001", label: "〜1000円" },
-  { value: "B002", label: "1001〜2000円" },
-  { value: "B003", label: "2001〜3000円" },
-  { value: "B004", label: "3001〜4000円" },
-  { value: "B005", label: "4001〜5000円" },
-  // ... 他の予算オプションを追加
-];
-
 export default function GourmetsPage({
   searchParams,
 }: {
@@ -73,26 +65,42 @@ export default function GourmetsPage({
 }) {
   const [shops, setShops] = useState<Shop[]>([]);
   const [areas, setAreas] = useState<ServiceArea[]>([]);
-  const [selectedArea, setSelectedArea] = useState<string>("");
-  const [area, setArea] = useState("沖縄");
+  const [selectedArea, setSelectedArea] = useState<string>("Z098"); // 初期エリア設定（例：東京）
+  // const [areaLabel, setAreaLabel] = useState<string>("エリアを選択");
   const [budget, setBudget] = useState<string>("");
+  const [budgetLabel, setBudgetLabel] = useState<string>("予算を選択");
+  const router = useRouter(); // useRouterフックを使用
+  const [privateRoom, setPrivateRoom] = useState<boolean>(false);
 
   useEffect(() => {
-    // Fetch shops on mount
-    const fetchInitialShops = async () => {
-      const shopsData = await fetchShops(searchParams.keyword);
-      setShops(shopsData);
-    };
-
-    // Fetch service areas on mount
+    // 初回マウント時にエリアのデータを取得
     const fetchServiceAreas = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
     };
 
-    fetchInitialShops();
+    const fetchInitialShops = async () => {
+      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+      setShops(shopsData);
+    };
+
     fetchServiceAreas();
-  }, [searchParams.keyword]);
+    fetchInitialShops();
+  }, []);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const query = new URLSearchParams({
+      keyword: searchParams.keyword || "",
+      area: selectedArea,
+      budget: budget,
+      private_room: privateRoom ? "1" : "0",
+    }).toString();
+
+    // 結果ページにリダイレクト
+    router.push(`/results?${query}`);
+  };
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen pt-36 px-8 md:px-12 lg:px-16">
@@ -100,85 +108,62 @@ export default function GourmetsPage({
         <ThemeToggle />
       </div>
 
-      <form className="search-bar">
+      <form className="search-bar" onSubmit={handleSearch}>
         {/* Dynamic Area Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">{area}</Button>
+            <Button variant="outline">{selectedArea}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
-              setArea(selectedArea)
+              setSelectedArea(selectedArea)
             }} name="area">
-              <DropdownMenuRadioItem value="okinawa">沖縄</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="kagoshima">鹿児島</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
+              {/* <DropdownMenuRadioItem value="kagoshima">鹿児島</DropdownMenuRadioItem> */}
               {/* 他のジャンルを追加 */}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
-
         {/* 予算のプルダウンメニュー */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">{budget ? budget : "予算を選択"}</Button>
+            <Button variant="outline">{budgetLabel}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>予算を選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               onValueChange={(selectedBudget) => {
-                setBudget(selectedBudget);  // 予算をステートに保存
+                setBudget(selectedBudget);  // 予算コードをステートに保存
+                const selectedLabel = budgetOptions.find(
+                  (option) => option.value === selectedBudget
+                )?.label;
+                if (selectedLabel) setBudgetLabel(selectedLabel);  // ラベルをステートに保存
               }}
               name="budget"
             >
-              <DropdownMenuRadioItem value="B001">~500円</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="B002">501~1000円</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="B003">1001~2000円</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="B004">2001~3000円</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="B005">3001~4000円</DropdownMenuRadioItem>
-              {/* 他の予算オプションを追加 */}
+              {budgetOptions.map((option) => (
+                <DropdownMenuRadioItem key={option.value} value={option.value}>
+                  {option.label}
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Static Genre Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">店名・ジャンル</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>店名・ジャンルを選択</DropdownMenuLabel>
-            <DropdownMenuRadioGroup name="genre">
-              <DropdownMenuRadioItem value="sushi">寿司</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="ramen">ラーメン</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="yakiniku">焼肉</DropdownMenuRadioItem>
-              {/* 他のジャンルを追加 */}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* 個室のチェックボックス */}
+        <div className="checkbox-container">
+          <label>
+            <input
+              type="checkbox"
+              checked={privateRoom}
+              onChange={(e) => setPrivateRoom(e.target.checked)}
+            />
+            個室あり
+          </label>
+        </div>
 
-        {/* Static Date Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">日付</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>日付を選択</DropdownMenuLabel>
-            <DropdownMenuRadioGroup name="date">
-              <DropdownMenuRadioItem value="2024-08-29">
-                2024年8月29日
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="2024-08-30">
-                2024年8月30日
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="2024-09-01">
-                2024年9月1日
-              </DropdownMenuRadioItem>
-              {/* 他の日付を追加 */}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <Button type="submit">検索</Button>
       </form>
@@ -208,3 +193,22 @@ export default function GourmetsPage({
     </div>
   );
 }
+
+
+
+const budgetOptions = [
+  { value: "B009", label: "~500円" },
+  { value: "B010", label: "501~1000円" },
+  { value: "B011", label: "1001~1500円" },
+  { value: "B001", label: "1501~2000円" },
+  { value: "B002", label: "2001~3000円" },
+  { value: "B003", label: "3001~4000円" },
+  { value: "B008", label: "4001~5000円" },
+  { value: "B004", label: "5001~7000円" },
+  { value: "B005", label: "7001~10000円" },
+  { value: "B006", label: "10000~15000円" },
+  { value: "B012", label: "15001~20000円" },
+  { value: "B013", label: "20001~30000円" },
+  { value: "B014", label: "30001~" },
+  // 他の予算オプションを追加
+];

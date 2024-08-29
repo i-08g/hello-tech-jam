@@ -13,12 +13,12 @@ import { useEffect, useState, createContext, useContext, ReactNode } from "react
 // Your web app's Firebase configuration
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const firebaseConfig = {
-  apiKey: "AIzaSyA_Zj4Add2-lfgPdFNJEMVVf_sQ6Cb7KvI",
-  authDomain: "attack-on-lapin-18373.firebaseapp.com",
-  projectId: "attack-on-lapin-18373",
-  storageBucket: "attack-on-lapin-18373.appspot.com",
-  messagingSenderId: "479249872302",
-  appId: "1:479249872302:web:2863c47ece28ce092f043f"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECTID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APPID
 }
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)

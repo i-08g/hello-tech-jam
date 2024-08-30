@@ -54,9 +54,7 @@ export default function ResultsPage() {
             {shops.length > 0 ? (
                 shops.map((shop) => (
                     <a
-                        href={shop.urls.pc}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/shop/${shop.id}`}
                         key={shop.id}
                     >
                         <Card>

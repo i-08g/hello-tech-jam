@@ -50,6 +50,11 @@ export async function GET(request: Request) {
     const data = await fetchHotpepperData(url);
     return NextResponse.json(data);
   } catch (error: unknown) {
-    return handleError(error);
+    if (error instanceof APIError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    } else {
+      console.error("Unexpected error:", error);
+      return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
+    }
   }
 }

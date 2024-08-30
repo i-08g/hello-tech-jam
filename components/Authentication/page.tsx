@@ -18,13 +18,13 @@ interface AuthContextProps {
 export const LoginUser: React.FC = () => {
     const { loginUser, login, logout } = AuthContextConsumer() as AuthContextProps;
     return (
-        <div className='flex items-center space-x-4'>
-            <UserCircleIcon className='h-10 w-10 text-gray-500' />
-            <p className='text-sm font-medium'>
+        <div className="flex items-center space-x-4">
+            <UserCircleIcon className="h-10 w-10 text-gray-500" />
+            <p className="text-sm font-medium">
                 {loginUser ? loginUser.displayName : "ゲスト"}
             </p>
             <Button 
-                className='text-sm' 
+                className="text-sm" 
                 variant="outline" 
                 onClick={loginUser ? logout : login}
             >

@@ -188,7 +188,7 @@ export default function GourmetsPage({
     };
 
     fetchInitialData();
-  }, []);
+  },[]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

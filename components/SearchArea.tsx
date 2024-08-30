@@ -1,4 +1,4 @@
-import { STATION_AREA } from "@/data/data";
+// import { STATION_AREA } from "@/data/data";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -67,9 +67,9 @@ export const SearchArea = ({ prefecture = [], genres = [] }: Props) => {
     };
 
     //駅の配列を取得
-    const stationArray = STATION_AREA[prefectureName].map((area: any) => {
-        return area.NAME;
-    });
+    // const stationArray = STATION_AREA[prefectureName].map((area: any) => {
+    //     return area.NAME;
+    // });
 
     /**
      * 選択中のエリアのコードを取得
@@ -171,7 +171,7 @@ export const SearchArea = ({ prefecture = [], genres = [] }: Props) => {
 
                 <div className="w-[49%] lg:w-[100px] border-[1px] border-[#999s] rounded-md overflow-hidden shadow lg:ml-2">
                     {/* 駅名 */}
-                    <select
+                    {/* <select
                         onChange={handleStationChange}
                         className="w-[100%] py-[10px] px-3 text-[14px] outline-none h-[100%] "
                     >
@@ -194,7 +194,7 @@ export const SearchArea = ({ prefecture = [], genres = [] }: Props) => {
                                     </option>
                                 );
                             })}
-                    </select>
+                    </select> */}
                 </div>
             </div>
 

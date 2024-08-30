@@ -43,8 +43,11 @@ export async function GET(request: Request) {
       large_area: searchParams.get("large_area") || "Z098",
       budget: searchParams.get("budget") || "",
       count: "10",
-      lat:searchParams.get("lat") || "",
-      lng:searchParams.get("lng") || "",
+      lat: searchParams.get("lat") || "",
+      lng: searchParams.get("lng") || "",
+      private_room: searchParams.get("private_room") || "0"
+      // private_room: "1"
+
     });
 
     const keyword = searchParams.get("keyword");
@@ -52,6 +55,8 @@ export async function GET(request: Request) {
 
     const url = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?${query.toString()}`;
     const data = await fetchHotpepperData(url);
+    console.log(data)
+    console.log(query.toString())
     return NextResponse.json(data);
   } catch (error: unknown) {
     return handleError(error);

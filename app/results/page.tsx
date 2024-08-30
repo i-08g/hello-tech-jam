@@ -7,12 +7,14 @@ import { Shop } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-async function fetchShops(keyword?: string, budget?: string, area?: string, count?: string): Promise<Shop[]> {
+async function fetchShops(keyword?: string, budget?: string, area?: string, count?: string, private_room?: string): Promise<Shop[]> {
     const query = new URLSearchParams();
     if (keyword) query.set("keyword", keyword);
     if (budget) query.set("budget", budget);
     if (area) query.set("large_area", area);
     if (count) query.set("count", count);
+    if (private_room) query.set("private_room", private_room);
+    console.log(query.toString(), "💐")
 
     try {
         const res = await fetch(
@@ -41,11 +43,12 @@ function ResultsComponent() {
         const budget = searchParams.get("budget") || "";
         const area = searchParams.get("area") || "";
         const count = searchParams.get("count") || "";
+        const private_room = searchParams.get("private_room") || "0";
 
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const shopsData = await fetchShops(keyword, budget, area, count);
+                const shopsData = await fetchShops(keyword, budget, area, count, private_room);
                 setShops(shopsData);
             } catch (error) {
                 console.error("Error fetching shops data:", error);
@@ -81,7 +84,7 @@ function ResultsComponent() {
                                 <p>{shop.address || "住所情報なし"}</p>
                                 <p>{shop.genre?.name || "ジャンル情報なし"}</p>
                                 <p>{shop.budget?.name || "予算情報なし"}</p>
-                                <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
+                                <p>個室{shop.private_room}</p>
                             </CardContent>
                         </Card>
                     </a>

@@ -20,15 +20,16 @@ interface ServiceArea {
   name: string;
 }
 
-async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: boolean, lat?:string, lng?:string, count?:string): Promise<Shop[]> {
+async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: string, lat?: string, lng?: string, count?: string): Promise<Shop[]> {
   const query = new URLSearchParams();
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
   if (area) query.set("large_area", area);
-  if (privateRoom) query.set("private_room", "1");
-  if (lat) query.set("lat",lat);
-  if (lng) query.set("lng",lng);
-  if (count) query.set("count",count);
+  if (privateRoom) query.set("private_room", privateRoom);
+  console.log(query.toString(), "🤖")
+  if (lat) query.set("lat", lat);
+  if (lng) query.set("lng", lng);
+  if (count) query.set("count", count);
 
   try {
     const res = await fetch(
@@ -64,10 +65,10 @@ async function fetchAreas(): Promise<ServiceArea[]> {
 
 async function fetchLunchShops(): Promise<Shop[]> {
   const query = new URLSearchParams({
-    range:"1",
+    range: "1",
     large_area: "Z098", // 沖縄県
     budget: "B001",     // 1501~2000円
-    count:"5"
+    count: "5"
   });
 
   try {
@@ -86,10 +87,10 @@ async function fetchLunchShops(): Promise<Shop[]> {
 
 async function fetchDinnerShops(): Promise<Shop[]> {
   const query = new URLSearchParams({
-    range:"1",
+    range: "1",
     large_area: "Z098", // 沖縄県
     budget: "B003",     // 3001~4000円
-    count:"5"
+    count: "5"
   });
 
   try {
@@ -114,7 +115,7 @@ async function fetchPopularShops(lat: number, lng: number): Promise<Shop[]> {
     lng: "127.695611",
     range: "1",
     order: "4", // 4: オススメ
-    count:"5"
+    count: "5"
   });
 
   try {
@@ -149,8 +150,8 @@ export default function GourmetsPage({
   const [privateRoom, setPrivateRoom] = useState<boolean>(false);
   const [initialLoad, setInitialLoad] = useState<boolean>(true); // 初期ロード状態のフラグ
   const router = useRouter();
-  const lat="26.223361";
-  const lng="127.695611";
+  const lat = "26.223361";
+  const lng = "127.695611";
 
   useEffect(() => {
     const fetchServiceAreas = async () => {
@@ -180,9 +181,11 @@ export default function GourmetsPage({
       keyword: searchParams.keyword || "",
       area: selectedArea,
       budget: budget,
-      private_room: privateRoom ? "1" : "",
+      private_room: privateRoom ? "1" : "0",
     }).toString();
 
+    console.log(query.toString(), "🍌")
+    // alert("test")
     router.push(`/results?${query}`);
   };
 
@@ -199,7 +202,7 @@ export default function GourmetsPage({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
-            <DropdownMenuRadioGroup  onValueChange={(selectedArea) => {
+            <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
             }}>
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>

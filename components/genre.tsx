@@ -23,7 +23,6 @@ interface GenreProps {
 }
 
 export const Genre: React.FC<GenreProps> = ({ shops }) => {
-  console.log(shops)
   const router = useRouter(); // useRouterフックを使用
 
   const handleNavigate = (shop: Shop) => {

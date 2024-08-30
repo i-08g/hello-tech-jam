@@ -171,30 +171,6 @@ export const SearchArea = ({ prefecture = [], genres = [] }: Props) => {
 
                 <div className="w-[49%] lg:w-[100px] border-[1px] border-[#999s] rounded-md overflow-hidden shadow lg:ml-2">
                     {/* 駅名 */}
-                    {/* <select
-                        onChange={handleStationChange}
-                        className="w-[100%] py-[10px] px-3 text-[14px] outline-none h-[100%] "
-                    >
-                        <option value="">駅を選択</option>
-                        {prefectureName &&
-                            stationArray.map((station) => {
-                                //selectの初期値を設定
-                                let isSelectStation = false;
-                                if (station === router.query.station) {
-                                    isSelectStation = true;
-                                }
-                                return (
-                                    <option
-                                        key={station}
-                                        value={station}
-                                        selected={isSelectStation}
-                                        className={`${isSelectStation}`}
-                                    >
-                                        {station}
-                                    </option>
-                                );
-                            })}
-                    </select> */}
                 </div>
             </div>
 

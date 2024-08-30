@@ -66,9 +66,7 @@ export default function ResultsPage() {
                                 <CardTitle>{shop.name}</CardTitle>
                             </CardHeader>
                             <CardContent>
-
-
-                                {console.log(`"${shop.private_room}"`)}
+                                {/* {console.log(`"${shop.private_room}"`)} */}
                                 {/* 値の前後にスペースや余計な文字がないか確認 */}
 
                                 <p>{shop.address || "住所情報なし"}</p>

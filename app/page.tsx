@@ -27,7 +27,7 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
   if (area) query.set("large_area", area);
-  if (privateRoom) query.set("private_room", "1"); // 個室ありをリクエストするために "1" を設定
+  if (privateRoom) query.set("private_room", "1");
 
   try {
     const res = await fetch(
@@ -37,7 +37,9 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
       console.error(`Failed to fetch shops: ${res.status} ${res.statusText}`);
       return [];
     }
-    return await res.json();
+    const data = await res.json();
+    return data; // 最初に全データを取得
+    // return privateRoom ? data.filter((shop: Shop) => shop.private_room === "1") : data;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Fetch error:", errorMessage);
@@ -98,37 +100,34 @@ export default function GourmetsPage({
   const router = useRouter(); // useRouterフックを使用
 
   useEffect(() => {
-    // 初回マウント時にエリアのデータと初期の店舗データを取得
     const fetchServiceAreas = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
-
-      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
-      setShops(shopsData);
-      setInitialLoad(false); // 初期ロード完了
     };
 
     const fetchInitialShops = async () => {
       const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
       setShops(shopsData);
-      setInitialLoad(false); // 初期ロード完了
+      setInitialLoad(false);
     };
 
     fetchServiceAreas();
     fetchInitialShops();
-  }, []); // 依存配列は空で初回のみ実行
+  }, [searchParams.keyword, budget, selectedArea, privateRoom]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
-    setShops(shopsData); // 検索ボタンが押された後に結果を更新
+    const filteredShops = privateRoom ? shopsData.filter((shop: Shop) => shop.private_room === "1") : shopsData;
+    setShops(filteredShops);
+
 
     const query = new URLSearchParams({
       keyword: searchParams.keyword || "",
       area: selectedArea,
       budget: budget,
-      private_room: privateRoom ? "1" : "", // チェックがついている場合に "1" をセット
+      private_room: privateRoom ? "1" : "",
     }).toString();
 
     router.push(`/results?${query}`);
@@ -149,7 +148,7 @@ export default function GourmetsPage({
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
-            }} name="area">
+            }}>
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
               {/* 他のエリアオプションを追加 */}
             </DropdownMenuRadioGroup>
@@ -169,9 +168,7 @@ export default function GourmetsPage({
                   (option) => option.value === selectedBudget
                 )?.label;
                 if (selectedLabel) setBudgetLabel(selectedLabel);
-              }}
-              name="budget"
-            >
+              }}>
               {budgetOptions.map((option) => (
                 <DropdownMenuRadioItem key={option.value} value={option.value}>
                   {option.label}
@@ -200,17 +197,17 @@ export default function GourmetsPage({
           <h2 className="text-2xl font-bold">近くのお店</h2>
           <Genre shops={shops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ランチに最適2000円以下</h2>
           <Genre shops={lunchShops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
           <Genre shops={shops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
           <Genre shops={shops} />
@@ -234,5 +231,5 @@ const budgetOptions = [
   { value: "B012", label: "15001~20000円" },
   { value: "B013", label: "20001~30000円" },
   { value: "B014", label: "30001~" },
-  // 他の予算オプ
+  // 他の予算オプション
 ]

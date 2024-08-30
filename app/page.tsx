@@ -68,9 +68,7 @@ async function fetchLunchShops(): Promise<Shop[]> {
   });
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
-    );
+    const res = await fetch(`/api/shops?${query.toString()}`);
     if (!res.ok) {
       console.error(`Failed to fetch lunch shops: ${res.status} ${res.statusText}`);
       return [];

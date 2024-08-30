@@ -28,8 +28,10 @@ function handleError(error: unknown): NextResponse {
 }
 
 export async function GET(request: Request) {
+    // URLを引数から取得
+    const searchParams = new URL(request.url).searchParams;
+
     try {
-        const { searchParams } = new URL(request.url);
         const key = process.env.HOTPEPPER_API_KEY;
         if (!key) {
             throw new APIError(500, "API key is not set");

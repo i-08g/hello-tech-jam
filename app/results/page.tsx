@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Suspense } from 'react';
 import { useEffect, useState } from "react";
 import { Shop } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -28,7 +29,7 @@ async function fetchShops(keyword?: string, budget?: string, area?: string): Pro
     }
 }
 
-export default function ResultsPage() {
+function ResultsComponent() {
     const searchParams = useSearchParams();
     const [shops, setShops] = useState<Shop[]>([]);
 
@@ -78,5 +79,13 @@ export default function ResultsPage() {
                 <p>店舗が見つかりません</p>
             )}
         </div>
+    );
+}
+
+export default function ResultsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResultsComponent />
+        </Suspense>
     );
 }

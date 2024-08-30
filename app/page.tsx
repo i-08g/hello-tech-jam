@@ -27,7 +27,7 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
   if (area) query.set("large_area", area);
-  if (privateRoom) query.set("private_room", "1"); // 個室ありをリクエストするために "1" を設定
+  if (privateRoom) query.set("private_room", "1");
 
   try {
     const res = await fetch(
@@ -37,7 +37,8 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
       console.error(`Failed to fetch shops: ${res.status} ${res.statusText}`);
       return [];
     }
-    return await res.json();
+    const data = await res.json();
+    return privateRoom ? data.filter((shop: Shop) => shop.private_room === "1") : data;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Fetch error:", errorMessage);
@@ -98,37 +99,32 @@ export default function GourmetsPage({
   const router = useRouter(); // useRouterフックを使用
 
   useEffect(() => {
-    // 初回マウント時にエリアのデータと初期の店舗データを取得
     const fetchServiceAreas = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
-
-      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
-      setShops(shopsData);
-      setInitialLoad(false); // 初期ロード完了
     };
 
     const fetchInitialShops = async () => {
       const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
       setShops(shopsData);
-      setInitialLoad(false); // 初期ロード完了
+      setInitialLoad(false);
     };
 
     fetchServiceAreas();
     fetchInitialShops();
-  }, []); // 依存配列は空で初回のみ実行
+  }, [searchParams.keyword, budget, selectedArea, privateRoom]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
-    setShops(shopsData); // 検索ボタンが押された後に結果を更新
+    setShops(shopsData);
 
     const query = new URLSearchParams({
       keyword: searchParams.keyword || "",
       area: selectedArea,
       budget: budget,
-      private_room: privateRoom ? "1" : "", // チェックがついている場合に "1" をセット
+      private_room: privateRoom ? "1" : "",
     }).toString();
 
     router.push(`/results?${query}`);

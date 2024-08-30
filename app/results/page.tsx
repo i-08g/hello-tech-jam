@@ -49,13 +49,17 @@ export default function ResultsPage() {
         fetchData();
     }, [searchParams]);
 
-
     return (
         <div className="result-card-container">
             {shops.length > 0 ? (
-                shops
-                    .map((shop) => (
-                        <Card key={shop.id}>
+                shops.map((shop) => (
+                    <a
+                        href={shop.urls.pc}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        key={shop.id}
+                    >
+                        <Card>
                             <CardHeader className="space-y-4 p-6">
                                 <Avatar className="w-12 h-12">
                                     <AvatarImage src={shop.photo.pc.m} />
@@ -64,18 +68,14 @@ export default function ResultsPage() {
                                 <CardTitle>{shop.name}</CardTitle>
                             </CardHeader>
                             <CardContent>
-
-
-                                {console.log(`"${shop.private_room}"`)}
-                                {/* 値の前後にスペースや余計な文字がないか確認 */}
-
                                 <p>{shop.address || "住所情報なし"}</p>
                                 <p>{shop.genre?.name || "ジャンル情報なし"}</p>
                                 <p>{shop.budget?.name || "予算情報なし"}</p>
                                 <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
                             </CardContent>
                         </Card>
-                    ))
+                    </a>
+                ))
             ) : (
                 <p>店舗が見つかりません</p>
             )}

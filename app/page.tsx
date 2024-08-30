@@ -38,7 +38,8 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
       return [];
     }
     const data = await res.json();
-    return privateRoom ? data.filter((shop: Shop) => shop.private_room === "1") : data;
+    return data; // 最初に全データを取得
+    // return privateRoom ? data.filter((shop: Shop) => shop.private_room === "1") : data;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Fetch error:", errorMessage);
@@ -118,7 +119,9 @@ export default function GourmetsPage({
     e.preventDefault();
 
     const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
-    setShops(shopsData);
+    const filteredShops = privateRoom ? shopsData.filter((shop: Shop) => shop.private_room === "1") : shopsData;
+    setShops(filteredShops);
+
 
     const query = new URLSearchParams({
       keyword: searchParams.keyword || "",
@@ -228,5 +231,5 @@ const budgetOptions = [
   { value: "B012", label: "15001~20000円" },
   { value: "B013", label: "20001~30000円" },
   { value: "B014", label: "30001~" },
-  // 他の予算オプ
+  // 他の予算オプション
 ]

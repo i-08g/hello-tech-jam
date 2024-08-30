@@ -38,7 +38,9 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, priv
       console.error(`Failed to fetch shops: ${res.status} ${res.statusText}`);
       return [];
     }
-    return await res.json();
+    const data = await res.json();
+    return data; // 最初に全データを取得
+    // return privateRoom ? data.filter((shop: Shop) => shop.private_room === "1") : data;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Fetch error:", errorMessage);
@@ -69,9 +71,7 @@ async function fetchLunchShops(): Promise<Shop[]> {
   });
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
-    );
+    const res = await fetch(`/api/shops?${query.toString()}`);
     if (!res.ok) {
       console.error(`Failed to fetch lunch shops: ${res.status} ${res.statusText}`);
       return [];
@@ -152,52 +152,34 @@ export default function GourmetsPage({
   const lng="127.695611";
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchServiceAreas = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
-  
-      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom, lat, lng);
-      setShops(shopsData);
-  
-      const lunchShopsData = await fetchLunchShops();
-      setLunchShops(lunchShopsData);
-  
-      const dinnerShopsData = await fetchDinnerShops();
-      setDinnerShops(dinnerShopsData);
-  
-      // ユーザーの位置情報を取得
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          const popularShopsData = await fetchPopularShops(latitude, longitude);
-          setPopularShops(popularShopsData);
-        }, (error) => {
-          console.error("Error getting user location:", error);
-          // デフォルトの位置（例：沖縄の中心付近）を使用
-          const defaultLat = 26.223361;
-          const defaultLng = 127.695611;
-          fetchPopularShops(defaultLat, defaultLng).then(setPopularShops);
-        });
-      } else {
-        console.error("Geolocation is not supported by this browser.");
-        // デフォルトの位置を使用
-        const defaultLat = 26.223361;
-        const defaultLng = 127.695611;
-        fetchPopularShops(defaultLat, defaultLng).then(setPopularShops);
-      }
     };
-  
-    fetchInitialData();
-  }, [searchParams.keyword, budget, selectedArea, privateRoom, lat, lng]);
+
+    const fetchInitialShops = async () => {
+      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+      setShops(shopsData);
+      setInitialLoad(false);
+    };
+
+    fetchServiceAreas();
+    fetchInitialShops();
+  }, [searchParams.keyword, budget, selectedArea, privateRoom]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom);
+    const filteredShops = privateRoom ? shopsData.filter((shop: Shop) => shop.private_room === "1") : shopsData;
+    setShops(filteredShops);
+
 
     const query = new URLSearchParams({
       keyword: searchParams.keyword || "",
       area: selectedArea,
       budget: budget,
-      private_room: privateRoom ? "1" : "0",
+      private_room: privateRoom ? "1" : "",
     }).toString();
 
     router.push(`/results?${query}`);
@@ -218,7 +200,7 @@ export default function GourmetsPage({
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
             <DropdownMenuRadioGroup  onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
-            }} >
+            }}>
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
@@ -237,8 +219,7 @@ export default function GourmetsPage({
                   (option) => option.value === selectedBudget
                 )?.label;
                 if (selectedLabel) setBudgetLabel(selectedLabel);
-              }}
-            >
+              }}>
               {budgetOptions.map((option) => (
                 <DropdownMenuRadioItem key={option.value} value={option.value}>
                   {option.label}
@@ -267,17 +248,17 @@ export default function GourmetsPage({
           <h2 className="text-2xl font-bold">近くのお店</h2>
           <Genre shops={shops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ランチに最適2000円以下</h2>
           <Genre shops={lunchShops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
           <Genre shops={dinnerShops} />
         </section>
-        
+
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
           <Genre shops={popularShops} />
@@ -301,4 +282,5 @@ const budgetOptions = [
   { value: "B012", label: "15001~20000円" },
   { value: "B013", label: "20001~30000円" },
   { value: "B014", label: "30001~" },
-];
+  // 他の予算オプション
+]

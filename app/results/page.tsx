@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { Shop } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -30,7 +31,7 @@ async function fetchShops(keyword?: string, budget?: string, area?: string, coun
     }
 }
 
-export default function ResultsPage() {
+function ResultsComponent() {
     const searchParams = useSearchParams();
     const [shops, setShops] = useState<Shop[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -64,25 +65,38 @@ export default function ResultsPage() {
         <div className="result-card-container">
             {shops.length > 0 ? (
                 shops.map((shop) => (
-                    <Card key={shop.id}>
-                        <CardHeader className="space-y-4 p-6">
-                            <Avatar className="w-12 h-12">
-                                <AvatarImage src={shop.photo.pc.m} />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
-                            <CardTitle>{shop.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p>{shop.address || "住所情報なし"}</p>
-                            <p>{shop.genre?.name || "ジャンル情報なし"}</p>
-                            <p>{shop.budget?.name || "予算情報なし"}</p>
-                            <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
-                        </CardContent>
-                    </Card>
+                    <a
+                        href={`/shop/${shop.id}`}
+                        key={shop.id}
+                    >
+                        <Card>
+                            <CardHeader className="space-y-4 p-6">
+                                <Avatar className="w-12 h-12">
+                                    <AvatarImage src={shop.photo.pc.m} />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                                <CardTitle>{shop.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p>{shop.address || "住所情報なし"}</p>
+                                <p>{shop.genre?.name || "ジャンル情報なし"}</p>
+                                <p>{shop.budget?.name || "予算情報なし"}</p>
+                                <p>{shop.private_room === "1" ? "個室あり" : "個室なし"}</p>
+                            </CardContent>
+                        </Card>
+                    </a>
                 ))
             ) : (
                 <p>店舗が見つかりません</p>
             )}
         </div>
+    );
+}
+
+export default function ResultsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResultsComponent />
+        </Suspense>
     );
 }

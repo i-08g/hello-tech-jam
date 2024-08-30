@@ -3,9 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Shop } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -22,12 +20,15 @@ interface ServiceArea {
   name: string;
 }
 
-async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: boolean): Promise<Shop[]> {
+async function fetchShops(keyword?: string, budget?: string, area?: string, privateRoom?: boolean, lat?:string, lng?:string, count?:string): Promise<Shop[]> {
   const query = new URLSearchParams();
   if (keyword) query.set("keyword", keyword);
   if (budget) query.set("budget", budget);
   if (area) query.set("large_area", area);
   if (privateRoom) query.set("private_room", "1");
+  if (lat) query.set("lat",lat);
+  if (lng) query.set("lng",lng);
+  if (count) query.set("count",count);
 
   try {
     const res = await fetch(
@@ -63,14 +64,65 @@ async function fetchAreas(): Promise<ServiceArea[]> {
 
 async function fetchLunchShops(): Promise<Shop[]> {
   const query = new URLSearchParams({
+    range:"1",
     large_area: "Z098", // 沖縄県
     budget: "B001",     // 1501~2000円
+    count:"5"
   });
 
   try {
     const res = await fetch(`/api/shops?${query.toString()}`);
     if (!res.ok) {
       console.error(`Failed to fetch lunch shops: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    return await res.json();
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Fetch error:", errorMessage);
+    return [];
+  }
+}
+
+async function fetchDinnerShops(): Promise<Shop[]> {
+  const query = new URLSearchParams({
+    range:"1",
+    large_area: "Z098", // 沖縄県
+    budget: "B003",     // 3001~4000円
+    count:"5"
+  });
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
+    );
+    if (!res.ok) {
+      console.error(`Failed to fetch dinner shops: ${res.status} ${res.statusText}`);
+      return [];
+    }
+    return await res.json();
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Fetch error:", errorMessage);
+    return [];
+  }
+}
+
+async function fetchPopularShops(lat: number, lng: number): Promise<Shop[]> {
+  const query = new URLSearchParams({
+    lat: "26.223361",
+    lng: "127.695611",
+    range: "1",
+    order: "4", // 4: オススメ
+    count:"5"
+  });
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_HOST}/api/shops?${query.toString()}`
+    );
+    if (!res.ok) {
+      console.error(`Failed to fetch popular shops: ${res.status} ${res.statusText}`);
       return [];
     }
     return await res.json();
@@ -88,14 +140,17 @@ export default function GourmetsPage({
 }) {
   const [shops, setShops] = useState<Shop[]>([]);
   const [lunchShops, setLunchShops] = useState<Shop[]>([]);
+  const [dinnerShops, setDinnerShops] = useState<Shop[]>([]);
+  const [popularShops, setPopularShops] = useState<Shop[]>([]);
   const [areas, setAreas] = useState<ServiceArea[]>([]);
-  const [selectedArea, setSelectedArea] = useState<string>("Z098"); // 初期エリア設定（例：東京）
+  const [selectedArea, setSelectedArea] = useState<string>("Z098");
   const [budget, setBudget] = useState<string>("");
   const [budgetLabel, setBudgetLabel] = useState<string>("予算を選択");
   const [privateRoom, setPrivateRoom] = useState<boolean>(false);
   const [initialLoad, setInitialLoad] = useState<boolean>(true); // 初期ロード状態のフラグ
-
-  const router = useRouter(); // useRouterフックを使用
+  const router = useRouter();
+  const lat="26.223361";
+  const lng="127.695611";
 
   useEffect(() => {
     const fetchServiceAreas = async () => {
@@ -144,11 +199,10 @@ export default function GourmetsPage({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
-            <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
+            <DropdownMenuRadioGroup  onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
             }}>
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
-              {/* 他のエリアオプションを追加 */}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -203,12 +257,12 @@ export default function GourmetsPage({
 
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">ディナーに最適4000円以下</h2>
-          <Genre shops={shops} />
+          <Genre shops={dinnerShops} />
         </section>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">注目度・アクセス数が多い</h2>
-          <Genre shops={shops} />
+          <Genre shops={popularShops} />
         </section>
       </div>
     </div>

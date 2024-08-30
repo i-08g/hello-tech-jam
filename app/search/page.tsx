@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-const SearchPage = () => {
+const SearchPageResult = () => {
   const searchParams = useSearchParams();
   const shop = searchParams.get("shop");
 
@@ -13,10 +14,10 @@ const SearchPage = () => {
       {parsedShop ? (
         <div className="bg-white shadow-md rounded-lg p-6">
           {/* 画像をセンターに配置し、サイズを大きくする */}
-          <img 
-            src={parsedShop.logo_image} 
-            alt={parsedShop.name} 
-            className="mx-auto mt-6 rounded-lg w-64 h-64 object-cover" 
+          <img
+            src={parsedShop.logo_image}
+            alt={parsedShop.name}
+            className="mx-auto mt-6 rounded-lg w-64 h-64 object-cover"
           />
           <h1 className="text-3xl font-bold text-center mt-4">{parsedShop.name}</h1>
           <p className="text-gray-600 text-center">{parsedShop.address || "住所情報なし"}</p>
@@ -37,4 +38,12 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+// export default SearchPage;
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPageResult />
+    </Suspense>
+  );
+}

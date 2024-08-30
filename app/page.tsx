@@ -147,6 +147,7 @@ export default function GourmetsPage({
   const [budget, setBudget] = useState<string>("");
   const [budgetLabel, setBudgetLabel] = useState<string>("予算を選択");
   const [privateRoom, setPrivateRoom] = useState<boolean>(false);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true); // 初期ロード状態のフラグ
   const router = useRouter();
   const lat="26.223361";
   const lng="127.695611";

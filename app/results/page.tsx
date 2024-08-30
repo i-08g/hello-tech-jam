@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense } from 'react';
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { Shop } from "@/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";

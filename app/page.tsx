@@ -216,9 +216,9 @@ export default function GourmetsPage({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>エリアを選択</DropdownMenuLabel>
-            <DropdownMenuRadioGroup onValueChange={(selectedArea) => {
+            <DropdownMenuRadioGroup  onValueChange={(selectedArea) => {
               setSelectedArea(selectedArea);
-            }} name="area">
+            }} >
               <DropdownMenuRadioItem value="Z098">沖縄</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
@@ -238,7 +238,6 @@ export default function GourmetsPage({
                 )?.label;
                 if (selectedLabel) setBudgetLabel(selectedLabel);
               }}
-              name="budget"
             >
               {budgetOptions.map((option) => (
                 <DropdownMenuRadioItem key={option.value} value={option.value}>

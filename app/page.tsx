@@ -155,16 +155,16 @@ export default function GourmetsPage({
     const fetchInitialData = async () => {
       const areasData = await fetchAreas();
       setAreas(areasData);
-
-      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom,lat,lng);
+  
+      const shopsData = await fetchShops(searchParams.keyword, budget, selectedArea, privateRoom, lat, lng);
       setShops(shopsData);
-
+  
       const lunchShopsData = await fetchLunchShops();
       setLunchShops(lunchShopsData);
-
+  
       const dinnerShopsData = await fetchDinnerShops();
       setDinnerShops(dinnerShopsData);
-
+  
       // ユーザーの位置情報を取得
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
@@ -186,9 +186,9 @@ export default function GourmetsPage({
         fetchPopularShops(defaultLat, defaultLng).then(setPopularShops);
       }
     };
-
+  
     fetchInitialData();
-  },[]);
+  }, [searchParams.keyword, budget, selectedArea, privateRoom, lat, lng]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
